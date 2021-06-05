@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "user_ms/backend/core/api;api";
+
+import "google/api/annotations.proto";
+import "user.proto";
+import "health.proto";
+
+service UserAPI {
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (google.api.http) = {
+      get : "/v1/ping"
+    };
+  }
+  rpc Create(CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post : "/v1/user/create"
+      body : "*"
+    };
+  }
+}
