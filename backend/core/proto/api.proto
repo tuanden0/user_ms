@@ -16,8 +16,29 @@ service UserAPI {
   }
   rpc Create(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
-      post : "/v1/user/create"
+      post : "/v1/user"
       body : "*"
+    };
+  }
+  rpc Retrieve(RetrieveUserRequest) returns (User) {
+    option (google.api.http) = {
+      get : "/v1/user/{id}"
+    };
+  }
+  rpc Update(UpdateUserRequest) returns (User) {
+    option (google.api.http) = {
+      patch : "/v1/user/{id}"
+      body : "*"
+    };
+  }
+  rpc Delete(DeleteUserRequest) returns (DeleteUserResponse) {
+    option (google.api.http) = {
+      delete : "/v1/user/{id}"
+    };
+  }
+  rpc List(ListUserRequest) returns (ListUserResponse) {
+    option (google.api.http) = {
+      get : "/v1/users"
     };
   }
 }

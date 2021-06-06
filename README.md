@@ -4,6 +4,15 @@
 
 go run /backend/core/cmd/main.go
 
+## Supported method
+
+GET, POST, PATCH, DELETE
+
+CREATE, RETRIEVE, UPDATE, DELETE, LIST (support pagination and sort)
+
 ## TODO
 
-Implement missing method: retrieve, update, delete, list
+Implement filter in LIST
+Validate user input
+Create user login/logout
+Validate user authenticated

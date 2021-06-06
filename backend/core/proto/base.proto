@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package api;
+option go_package = "user_ms/backend/core/api;api";
+
+import "validate/validate.proto";
+
+message Pagination {
+  uint32 limit = 1 [(validate.rules).uint32.gt = 0];
+  uint32 page = 2;
+}
+
+message Filter {
+  string key = 1;
+  string value = 2;
+  string method = 3;
+}
+
+message Sort {
+  string key = 1;
+  bool is_asc = 2;
+}
