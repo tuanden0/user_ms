@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "UserAPI"
+    },
+    {
+      "name": "AuthenService"
     }
   ],
   "consumes": [
@@ -16,6 +19,60 @@
     "application/json"
   ],
   "paths": {
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "AuthenService_Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUserLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUserLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthenService"
+        ]
+      }
+    },
+    "/v1/auth/ping": {
+      "get": {
+        "operationId": "AuthenService_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiPingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AuthenService"
+        ]
+      }
+    },
     "/v1/ping": {
       "get": {
         "operationId": "UserAPI_Ping",
@@ -38,7 +95,7 @@
         ]
       }
     },
-    "/v1/user/create": {
+    "/v1/user": {
       "post": {
         "operationId": "UserAPI_Create",
         "responses": {
@@ -168,6 +225,9 @@
                 },
                 "email": {
                   "type": "string"
+                },
+                "role": {
+                  "type": "string"
                 }
               }
             }
@@ -240,6 +300,9 @@
           "type": "string"
         },
         "email": {
+          "type": "string"
+        },
+        "role": {
           "type": "string"
         }
       }
@@ -328,6 +391,25 @@
           "type": "string"
         },
         "email": {
+          "type": "string"
+        }
+      }
+    },
+    "apiUserLoginRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "apiUserLoginResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
           "type": "string"
         }
       }

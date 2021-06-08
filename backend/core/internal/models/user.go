@@ -7,6 +7,7 @@ type User struct {
 	Username string
 	Password string
 	Email    string
+	Role     string
 }
 
 func (u *User) GetID() uint32 {
@@ -23,6 +24,10 @@ func (u *User) GetUserName() string {
 
 func (u *User) GetPassWord() string {
 	return u.Password
+}
+
+func (u *User) GetRole() string {
+	return u.Role
 }
 
 // Function to handle user password

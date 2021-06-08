@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "user_ms/backend/core/api;api";
+
+message UserLoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message UserLoginResponse { string access_token = 1; }

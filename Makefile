@@ -9,6 +9,7 @@ install:
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26.0
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+	go install github.com/dgrijalva/jwt-go@latest
 
 build:
 	go install ./tools/build

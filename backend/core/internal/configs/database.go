@@ -1,6 +1,8 @@
-package models
+package configs
 
 import (
+	"user_ms/backend/core/internal/models"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -17,7 +19,7 @@ func ConnectDatabase() *gorm.DB {
 		}
 
 		// Auto Migrate
-		err = db.AutoMigrate(&User{})
+		err = db.AutoMigrate(&models.User{})
 		if err != nil {
 			panic("failed to migrate database")
 		}

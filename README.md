@@ -12,7 +12,12 @@ CREATE, RETRIEVE, UPDATE, DELETE, LIST (support pagination and sort)
 
 ## TODO
 
-Implement filter in LIST
+~~Implement filter in LIST~~
+
+Fix swagger or protobuf to allow filter
+
 Validate user input
-Create user login/logout
+
+Create user ~~login~~/logout
+
 Validate user authenticated

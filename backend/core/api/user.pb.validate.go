@@ -120,6 +120,8 @@ func (m *CreateUserRequest) Validate() error {
 
 	// no validation rules for Email
 
+	// no validation rules for Role
+
 	return nil
 }
 
@@ -332,6 +334,8 @@ func (m *UpdateUserRequest) Validate() error {
 	// no validation rules for Password
 
 	// no validation rules for Email
+
+	// no validation rules for Role
 
 	return nil
 }

@@ -91,7 +91,7 @@ func (m *UserMng) List(pagination *Pagination, sort *Sort, filters []*Filter) ([
 		Offset(int(pagination.Limit) * (int(pagination.Page) - 1))
 
 	for _, f := range filters {
-		qs.Where("? ? ?", f.Key, f.Method, f.Value)
+		qs = qs.Where(fmt.Sprintf("%v %v ?", f.Key, f.Method), f.Value)
 	}
 
 	if err := qs.Find(&users).Error; err != nil {

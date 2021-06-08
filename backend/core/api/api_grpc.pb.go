@@ -279,3 +279,125 @@ var UserAPI_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "api.proto",
 }
+
+// AuthenServiceClient is the client API for AuthenService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AuthenServiceClient interface {
+	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	Login(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error)
+}
+
+type authenServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAuthenServiceClient(cc grpc.ClientConnInterface) AuthenServiceClient {
+	return &authenServiceClient{cc}
+}
+
+func (c *authenServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+	out := new(PingResponse)
+	err := c.cc.Invoke(ctx, "/api.AuthenService/Ping", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authenServiceClient) Login(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error) {
+	out := new(UserLoginResponse)
+	err := c.cc.Invoke(ctx, "/api.AuthenService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AuthenServiceServer is the server API for AuthenService service.
+// All implementations must embed UnimplementedAuthenServiceServer
+// for forward compatibility
+type AuthenServiceServer interface {
+	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	Login(context.Context, *UserLoginRequest) (*UserLoginResponse, error)
+	mustEmbedUnimplementedAuthenServiceServer()
+}
+
+// UnimplementedAuthenServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedAuthenServiceServer struct {
+}
+
+func (UnimplementedAuthenServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedAuthenServiceServer) Login(context.Context, *UserLoginRequest) (*UserLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthenServiceServer) mustEmbedUnimplementedAuthenServiceServer() {}
+
+// UnsafeAuthenServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthenServiceServer will
+// result in compilation errors.
+type UnsafeAuthenServiceServer interface {
+	mustEmbedUnimplementedAuthenServiceServer()
+}
+
+func RegisterAuthenServiceServer(s grpc.ServiceRegistrar, srv AuthenServiceServer) {
+	s.RegisterService(&AuthenService_ServiceDesc, srv)
+}
+
+func _AuthenService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.AuthenService/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenServiceServer).Ping(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthenService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.AuthenService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenServiceServer).Login(ctx, req.(*UserLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AuthenService_ServiceDesc is the grpc.ServiceDesc for AuthenService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AuthenService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "api.AuthenService",
+	HandlerType: (*AuthenServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _AuthenService_Ping_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _AuthenService_Login_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api.proto",
+}

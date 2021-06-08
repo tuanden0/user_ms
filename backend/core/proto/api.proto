@@ -7,6 +7,7 @@ option go_package = "user_ms/backend/core/api;api";
 import "google/api/annotations.proto";
 import "user.proto";
 import "health.proto";
+import "authentication.proto";
 
 service UserAPI {
   rpc Ping(PingRequest) returns (PingResponse) {
@@ -39,6 +40,20 @@ service UserAPI {
   rpc List(ListUserRequest) returns (ListUserResponse) {
     option (google.api.http) = {
       get : "/v1/users"
+    };
+  }
+}
+
+service AuthenService {
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (google.api.http) = {
+      get : "/v1/auth/ping"
+    };
+  }
+  rpc Login(UserLoginRequest) returns (UserLoginResponse) {
+    option (google.api.http) = {
+      post : "/v1/auth/login"
+      body : "*"
     };
   }
 }

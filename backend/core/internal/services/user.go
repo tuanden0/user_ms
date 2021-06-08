@@ -17,7 +17,7 @@ type userService struct {
 	api.UnimplementedUserAPIServer
 }
 
-func Init(repo repository.UserRepository) UserService {
+func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
@@ -33,6 +33,7 @@ func (s *userService) Create(ctx context.Context, in *api.CreateUserRequest) (*a
 		Username: in.GetUsername(),
 		Password: in.GetPassword(),
 		Email:    in.GetEmail(),
+		Role:     in.GetRole(),
 	}
 
 	hash, err := u.HashPassword()
@@ -132,7 +133,7 @@ func (s *userService) List(ctx context.Context, in *api.ListUserRequest) (*api.L
 	filters := make([]*repository.Filter, 0)
 	if filters != nil {
 		for _, f := range inputFilters {
-			filters = append(filters, repository.NewFilter(f.Key, f.Method, f.Value))
+			filters = append(filters, repository.NewFilter(f.Key, f.Value, f.Method))
 		}
 	}
 

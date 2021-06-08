@@ -31,10 +31,16 @@ func StartGatewayServer() {
 	// Create MUX
 	mux := runtime.NewServeMux()
 
-	// Create User Handler
+	// Create UserService Handler
 	err = api.RegisterUserAPIHandler(context.Background(), mux, conn)
 	if err != nil {
-		log.Fatalln("Failed to register gateway: ", err.Error())
+		log.Fatalln("Failed to register UserService gateway: ", err.Error())
+	}
+
+	// Create UserAuthService Handler
+	err = api.RegisterAuthenServiceHandler(context.Background(), mux, conn)
+	if err != nil {
+		log.Fatalln("Failed to register UserAuthService gateway: ", err.Error())
 	}
 
 	// Create HTTP Server
