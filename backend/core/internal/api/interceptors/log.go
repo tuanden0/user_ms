@@ -3,6 +3,7 @@ package interceptors
 import (
 	"context"
 	"log"
+	"user_ms/backend/core/internal/repository"
 
 	"google.golang.org/grpc"
 )
@@ -13,6 +14,7 @@ func LogUnaryInterceptor(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (resp interface{}, err error) {
-	log.Println(info.FullMethod)
+	userClaim := repository.ParseUserFromCTX(ctx)
+	log.Printf("%v has call %v", userClaim.Username, info.FullMethod)
 	return handler(ctx, req)
 }

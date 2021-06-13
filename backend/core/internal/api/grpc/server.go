@@ -40,11 +40,11 @@ func StartGRPCServer() {
 	userAuthenService := services.NewUserAuthenService(userAuthRepo)
 
 	// Init GRPC and Interceptor (middleware)
-	// auth := interceptors.NewAuthInterceptor(userAuthRepo, interceptors.AccessibleRoles())
+	auth := interceptors.NewAuthInterceptor(userAuthRepo)
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
+			auth.JWTUnaryInterceptor(),
 			interceptors.LogUnaryInterceptor,
-			// auth.JWTUnaryInterceptor(),
 		),
 	)
 	api.RegisterUserAPIServer(s, userService)

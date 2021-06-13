@@ -3,6 +3,7 @@ package interceptors
 import (
 	"context"
 	"log"
+	"user_ms/backend/core/internal/constant"
 	"user_ms/backend/core/internal/repository"
 
 	"google.golang.org/grpc"
@@ -14,12 +15,12 @@ import (
 // https://dev.to/techschoolguru/use-grpc-interceptor-for-authorization-with-jwt-1c5h
 
 type AuthInterceptor struct {
-	jwtManager      *repository.JWTManager
-	accessibleRoles map[string][]string
+	jwtManager *repository.JWTManager
+	// accessibleRoles map[string][]string
 }
 
-func NewAuthInterceptor(jwtManager *repository.JWTManager, accessibleRoles map[string][]string) *AuthInterceptor {
-	return &AuthInterceptor{jwtManager, accessibleRoles}
+func NewAuthInterceptor(jwtManager *repository.JWTManager) *AuthInterceptor {
+	return &AuthInterceptor{jwtManager}
 }
 
 func (interceptor *AuthInterceptor) JWTUnaryInterceptor() grpc.UnaryServerInterceptor {
@@ -29,57 +30,44 @@ func (interceptor *AuthInterceptor) JWTUnaryInterceptor() grpc.UnaryServerInterc
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		err := interceptor.authorize(ctx, info.FullMethod)
+		newCTX, err := interceptor.authorize(ctx, info.FullMethod)
 		if err != nil {
 			log.Println(err.Error())
 			return nil, err
 		}
 
-		return handler(ctx, req)
+		return handler(newCTX, req)
 	}
 }
 
-func AccessibleRoles() map[string][]string {
-	const userServicePath = "/api.UserAPI/"
+func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string) (context.Context, error) {
 
-	return map[string][]string{
-		userServicePath + "Create":   {"admin"},
-		userServicePath + "Retrieve": {"user", "admin"},
-		userServicePath + "Update":   {"user", "admin"},
-		userServicePath + "Delete":   {"user", "admin"},
-		userServicePath + "List":     {"admin"},
-	}
-}
-
-func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string) error {
-
-	accessibleRoles, ok := interceptor.accessibleRoles[method]
-	if !ok {
-		// everyone can access
-		return nil
+	// Bypass login
+	loginPath := "/api.AuthenService/Login"
+	if method == loginPath {
+		return ctx, nil
 	}
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return status.Errorf(codes.Unauthenticated, "metadata is not provided")
+		return ctx, status.Errorf(codes.Unauthenticated, "metadata is not provided")
 	}
 
 	values := md["authorization"]
 	if len(values) == 0 {
-		return status.Errorf(codes.Unauthenticated, "authorization token is not provided")
+		return ctx, status.Errorf(codes.Unauthenticated, "authorization token is not provided")
 	}
 
 	accessToken := values[0]
 	claims, err := interceptor.jwtManager.Verify(accessToken)
 	if err != nil {
-		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
+		return ctx, status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
 	}
 
-	for _, role := range accessibleRoles {
-		if role == claims.Role {
-			return nil
-		}
-	}
+	newCTX := context.WithValue(ctx, constant.JWTKey, repository.UserClaims{
+		Username: claims.Username,
+		Role:     claims.Role,
+	})
 
-	return status.Error(codes.PermissionDenied, "no permission to access this RPC")
+	return newCTX, nil
 }

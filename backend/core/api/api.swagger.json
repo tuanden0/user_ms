@@ -239,7 +239,7 @@
       }
     },
     "/v1/users": {
-      "get": {
+      "post": {
         "operationId": "UserAPI_List",
         "responses": {
           "200": {
@@ -257,30 +257,12 @@
         },
         "parameters": [
           {
-            "name": "pagination.limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "pagination.page",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "sort.key",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "sort.isAsc",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiListUserRequest"
+            }
           }
         ],
         "tags": [
@@ -334,6 +316,23 @@
         },
         "method": {
           "type": "string"
+        }
+      }
+    },
+    "apiListUserRequest": {
+      "type": "object",
+      "properties": {
+        "pagination": {
+          "$ref": "#/definitions/apiPagination"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiFilter"
+          }
+        },
+        "sort": {
+          "$ref": "#/definitions/apiSort"
         }
       }
     },

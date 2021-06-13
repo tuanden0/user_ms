@@ -8,16 +8,16 @@ go run /backend/core/cmd/main.go
 
 GET, POST, PATCH, DELETE
 
-CREATE, RETRIEVE, UPDATE, DELETE, LIST (support pagination and sort)
+CREATE, RETRIEVE, UPDATE, DELETE, LIST (support pagination, filters and sort)
 
 ## TODO
 
 ~~Implement filter in LIST~~
 
-Fix swagger or protobuf to allow filter
+~~Fix swagger or protobuf to allow filter (change get to post method)~~
 
-Validate user input
+~~Validate user input~~
 
-Create user ~~login~~/logout
+~~Manage user login~~
 
-Validate user authenticated
+~~Validate user authenticated~~

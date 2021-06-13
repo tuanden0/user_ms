@@ -39,7 +39,8 @@ service UserAPI {
   }
   rpc List(ListUserRequest) returns (ListUserResponse) {
     option (google.api.http) = {
-      get : "/v1/users"
+      post : "/v1/users"
+      body : "*"
     };
   }
 }

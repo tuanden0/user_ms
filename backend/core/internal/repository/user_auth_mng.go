@@ -1,11 +1,15 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"time"
+	"user_ms/backend/core/internal/constant"
 	"user_ms/backend/core/internal/models"
 
 	"github.com/dgrijalva/jwt-go"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
@@ -73,4 +77,39 @@ func (manager *JWTManager) GenerateJWTToken(u *models.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(manager.secretKey))
+}
+
+// function parse user info from ctx
+func ParseUserFromCTX(ctx context.Context) *UserClaims {
+
+	userClaim := ctx.Value(constant.JWTKey)
+	if userClaim != nil {
+		if userClaim, ok := userClaim.(UserClaims); ok {
+			return &userClaim
+		}
+	}
+
+	return &UserClaims{
+		Username: "Anonymous",
+		Role:     "anonymous",
+	}
+}
+
+// function validate user access role
+func ValidateAcessRole(ctx context.Context, roles ...string) (*UserClaims, error) {
+
+	userClaim := ctx.Value(constant.JWTKey)
+	if userClaim != nil {
+		if userClaim, ok := userClaim.(UserClaims); ok {
+			for _, r := range roles {
+				if userClaim.Role == r || r == "all" {
+					return &userClaim, nil
+				}
+			}
+			return nil, status.Errorf(codes.PermissionDenied, "do not have premission to access")
+
+		}
+	}
+
+	return nil, status.Errorf(codes.Unauthenticated, "authorization info is not provided")
 }
