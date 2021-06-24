@@ -15,7 +15,7 @@ func NewUserMng(db *gorm.DB) UserRepository {
 	return &UserMng{db: db}
 }
 
-func NewSort(key string, is_asc string) *Sort {
+func NewSort(key string, is_asc bool) *Sort {
 	return &Sort{
 		Key:   key,
 		IsASC: is_asc,
@@ -86,12 +86,12 @@ func (m *UserMng) List(pagination *Pagination, sort *Sort, filters []*Filter) ([
 	users := make([]*models.User, 0)
 
 	qs := m.db.
-		Order(fmt.Sprintf("%v %v", sort.Key, sort.IsASC)).
-		Limit(int(pagination.Limit)).
-		Offset(int(pagination.Limit) * (int(pagination.Page) - 1))
+		Order(fmt.Sprintf("%v %v", sort.GetKey(), sort.GetIsASC())).
+		Limit(int(pagination.GetLimit())).
+		Offset(int(pagination.GetLimit()) * (int(pagination.GetPage()) - 1))
 
 	for _, f := range filters {
-		qs = qs.Where(fmt.Sprintf("%v %v ?", f.Key, f.Method), f.Value)
+		qs = qs.Where(fmt.Sprintf("%v %v ?", f.GetKey(), f.GetMethod()), f.GetValue())
 	}
 
 	if err := qs.Find(&users).Error; err != nil {

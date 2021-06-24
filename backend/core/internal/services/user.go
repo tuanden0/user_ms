@@ -164,26 +164,13 @@ func (s *userService) List(ctx context.Context, in *api.ListUserRequest) (*api.L
 	inputFilters := in.GetFilters()
 	inputPagination := in.GetPagination()
 
-	sort := repository.NewSort("id", "ASC")
-	if inputSort != nil {
-		sort.Key = inputSort.Key
-		if !inputSort.IsAsc {
-			sort.IsASC = "DESC"
-		}
+	sort := repository.NewSort(inputSort.GetKey(), inputSort.GetIsAsc())
 
-	}
-
-	pagination := repository.NewPagination(5, 1)
-	if inputPagination != nil {
-		pagination.Limit = inputPagination.Limit
-		pagination.Page = inputPagination.Page
-	}
+	pagination := repository.NewPagination(inputPagination.GetLimit(), inputPagination.GetPage())
 
 	filters := make([]*repository.Filter, 0)
-	if filters != nil {
-		for _, f := range inputFilters {
-			filters = append(filters, repository.NewFilter(f.Key, f.Value, f.Method))
-		}
+	for _, f := range inputFilters {
+		filters = append(filters, repository.NewFilter(f.GetKey(), f.GetValue(), f.GetMethod()))
 	}
 
 	uList, err := s.repo.List(pagination, sort, filters)
