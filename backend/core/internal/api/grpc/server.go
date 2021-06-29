@@ -6,9 +6,9 @@ import (
 	"time"
 	"user_ms/backend/core/api"
 	"user_ms/backend/core/internal/api/interceptors"
-	"user_ms/backend/core/internal/configs"
 	"user_ms/backend/core/internal/repository"
 	"user_ms/backend/core/internal/services"
+	"user_ms/backend/core/internal/util"
 
 	"google.golang.org/grpc"
 )
@@ -31,7 +31,7 @@ func StartGRPCServer() {
 	}
 
 	// Connect DB
-	db := configs.ConnectDatabase()
+	db := util.ConnectDatabase()
 
 	// Create User Services
 	userAuthRepo := repository.NewJWTManager(secretKey, tokenDuration, db)

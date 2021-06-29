@@ -1,17 +1,20 @@
 package util
 
 import (
+	"sync"
 	"user_ms/backend/core/internal/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	DB         *gorm.DB
+	dbConnOnce sync.Once
+)
 
 func ConnectDatabase() *gorm.DB {
-
-	if DB == nil {
+	dbConnOnce.Do(func() {
 		db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 
 		if err != nil {
@@ -25,7 +28,7 @@ func ConnectDatabase() *gorm.DB {
 		}
 
 		DB = db
-	}
+	})
 
 	return DB
 }
