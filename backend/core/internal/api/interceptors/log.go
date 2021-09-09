@@ -14,7 +14,7 @@ func LogUnaryInterceptor(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (resp interface{}, err error) {
-	userClaim := repository.ParseUserFromCTX(ctx)
+	userClaim := repository.ParseUserOrAnonymousFromCTX(ctx)
 	log.Printf("%v has call %v", userClaim.Username, info.FullMethod)
 	return handler(ctx, req)
 }

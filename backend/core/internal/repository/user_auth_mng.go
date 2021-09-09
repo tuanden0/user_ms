@@ -23,10 +23,30 @@ func NewJWTManager(secretKey string, tokenDuration time.Duration, db *gorm.DB) *
 	return &JWTManager{secretKey, tokenDuration, db}
 }
 
+func NewAnonymousClaim() *UserClaims {
+	return &UserClaims{
+		Username: "Anonymous",
+		Role:     "anonymous",
+	}
+}
+
 type UserClaims struct {
 	jwt.StandardClaims
+	Id       uint32 `json:"id"`
 	Username string `json:"username"`
 	Role     string `json:"role"`
+}
+
+func (u *UserClaims) GetID() uint32 {
+	return u.Id
+}
+
+func (u *UserClaims) GetUserName() string {
+	return u.Username
+}
+
+func (u *UserClaims) GetRole() string {
+	return u.Role
 }
 
 func (manager *JWTManager) Verify(accessToken string) (*UserClaims, error) {
@@ -71,8 +91,9 @@ func (manager *JWTManager) GenerateJWTToken(u *models.User) (string, error) {
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(manager.tokenDuration).Unix(),
 		},
-		Username: u.Username,
-		Role:     u.Role,
+		Id:       u.GetID(),
+		Username: u.GetUserName(),
+		Role:     u.GetRole(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -80,7 +101,7 @@ func (manager *JWTManager) GenerateJWTToken(u *models.User) (string, error) {
 }
 
 // function parse user info from ctx
-func ParseUserFromCTX(ctx context.Context) *UserClaims {
+func ParseUserOrAnonymousFromCTX(ctx context.Context) *UserClaims {
 
 	userClaim := ctx.Value(constant.JWTKey)
 	if userClaim != nil {
@@ -89,10 +110,19 @@ func ParseUserFromCTX(ctx context.Context) *UserClaims {
 		}
 	}
 
-	return &UserClaims{
-		Username: "Anonymous",
-		Role:     "anonymous",
+	return NewAnonymousClaim()
+}
+
+func ParseUsersOrNilFromCTX(ctx context.Context) *UserClaims {
+
+	userClaim := ctx.Value(constant.JWTKey)
+	if userClaim != nil {
+		if userClaim, ok := userClaim.(UserClaims); ok {
+			return &userClaim
+		}
 	}
+
+	return nil
 }
 
 // function validate user access role
@@ -102,7 +132,7 @@ func ValidateAcessRole(ctx context.Context, roles ...string) (*UserClaims, error
 	if userClaim != nil {
 		if userClaim, ok := userClaim.(UserClaims); ok {
 			for _, r := range roles {
-				if userClaim.Role == r || r == "all" {
+				if userClaim.GetRole() == r || r == "all" {
 					return &userClaim, nil
 				}
 			}

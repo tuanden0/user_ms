@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"strconv"
 	"user_ms/backend/core/api"
-	"user_ms/backend/core/internal/models"
 	"user_ms/backend/core/internal/repository"
+	"user_ms/backend/core/internal/util"
+	"user_ms/backend/core/internal/validators"
 )
 
 type UserService interface {
@@ -36,158 +36,102 @@ func (s *userService) Ping(ctx context.Context, in *api.PingRequest) (*api.PingR
 
 func (s *userService) Create(ctx context.Context, in *api.CreateUserRequest) (*api.CreateUserResponse, error) {
 
-	// Validate User access role
-	_, err := repository.ValidateAcessRole(ctx, "admin")
+	// Validate CreateUserRequest
+	if err := validators.ValidateCreateUserRequest(ctx, in); err != nil {
+		return nil, err
+	}
+
+	// Mapping input to model
+	u, err := util.MapCreateUserRequest(ctx, in)
 	if err != nil {
 		return nil, err
 	}
 
-	u := &models.User{
-		Username: in.GetUsername(),
-		Password: in.GetPassword(),
-		Email:    in.GetEmail(),
-		Role:     in.GetRole(),
-	}
-
-	hash, err := u.HashPassword()
-
-	if err != nil {
-		return nil, err
-	}
-
-	u.Password = hash
-
+	// Create user
 	if err := s.repo.Create(u); err != nil {
 		return nil, err
 	}
 
-	return &api.CreateUserResponse{
-		Message: "create user success",
-	}, nil
+	// Response to client
+	return util.MapCreateUserResponse("create user success"), nil
 }
 
 func (s *userService) Retrieve(ctx context.Context, in *api.RetrieveUserRequest) (*api.User, error) {
 
-	// Validate User access role
-	_, err := repository.ValidateAcessRole(ctx, "admin", "user")
-	if err != nil {
+	// Validate RetrieveUserRequest
+	if err := validators.ValidateRetrieveUserRequest(ctx, in); err != nil {
 		return nil, err
 	}
 
-	id := strconv.FormatUint(uint64(in.GetId()), 10)
+	// Mapping input to user id
+	id := util.MapUserId(in.GetId())
+
+	// Get user from user id
 	u, err := s.repo.Retrieve(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &api.User{
-		Id:       u.GetID(),
-		Username: u.GetUserName(),
-		Email:    u.GetEmail(),
-	}, nil
+	// Response to client
+	return util.MapRetrieveUserResponse(u), nil
 }
 
 func (s *userService) Update(ctx context.Context, in *api.UpdateUserRequest) (*api.User, error) {
 
-	// Validate User access role
-	userClaim, err := repository.ValidateAcessRole(ctx, "admin", "user")
+	// Validate UpdateUserRequest
+	if err := validators.ValidateUpdateUserRequest(ctx, in); err != nil {
+		return nil, err
+	}
+
+	// Mapping user input to model
+	uInput, err := util.MapUpdateUserRequest(ctx, in)
 	if err != nil {
 		return nil, err
 	}
 
-	uInput := models.User{}
-
-	if userClaim.Role == "admin" {
-		uInput = models.User{
-			Username: in.GetUsername(),
-			Password: in.GetPassword(),
-			Email:    in.GetEmail(),
-			Role:     in.GetRole(),
-		}
-	} else {
-		uInput = models.User{
-			Username: in.GetUsername(),
-			Password: in.GetPassword(),
-			Email:    in.GetEmail(),
-		}
-	}
-
-	hash, err := uInput.HashPassword()
-
+	// Update user
+	u, err := s.repo.Update(uInput.GetStringID(), *uInput)
 	if err != nil {
 		return nil, err
 	}
 
-	uInput.Password = hash
-
-	id := strconv.FormatUint(uint64(in.GetId()), 10)
-
-	u, err := s.repo.Update(id, uInput)
-	if err != nil {
-		return nil, err
-	}
-
-	return &api.User{
-		Id:       u.GetID(),
-		Username: u.GetUserName(),
-		Email:    u.GetEmail(),
-	}, nil
+	// Return to client
+	return util.MapUpdateUserResponse(u), nil
 }
 
 func (s *userService) Delete(ctx context.Context, in *api.DeleteUserRequest) (*api.DeleteUserResponse, error) {
 
-	// Validate User access role
-	_, err := repository.ValidateAcessRole(ctx, "admin", "user")
-	if err != nil {
+	// Validate DeleteUserRequest
+	if err := validators.ValidateDeleteUserRequest(ctx, in); err != nil {
 		return nil, err
 	}
 
-	id := strconv.FormatUint(uint64(in.GetId()), 10)
+	// Mapping input
+	id := util.MapUserId(in.GetId())
 	if err := s.repo.Delete(id); err != nil {
 		return nil, err
 	}
 
-	return &api.DeleteUserResponse{
-		Message: "delete user success",
-	}, nil
+	// Respose to client
+	return util.MapDeleteUserResponse("delete user success"), nil
 }
 
 func (s *userService) List(ctx context.Context, in *api.ListUserRequest) (*api.ListUserResponse, error) {
 
-	// Validate User access role
-	_, err := repository.ValidateAcessRole(ctx, "admin")
+	// Validate ListUserRequest
+	if err := validators.ValidateListUserRequest(ctx, in); err != nil {
+		return nil, err
+	}
+
+	// Mapping input to models
+	pagination, sort, filters := util.MapListUserRequest(in)
+
+	// Get list users
+	users, err := s.repo.List(pagination, sort, filters)
 	if err != nil {
 		return nil, err
 	}
 
-	inputSort := in.GetSort()
-	inputFilters := in.GetFilters()
-	inputPagination := in.GetPagination()
-
-	sort := repository.NewSort(inputSort.GetKey(), inputSort.GetIsAsc())
-
-	pagination := repository.NewPagination(inputPagination.GetLimit(), inputPagination.GetPage())
-
-	filters := make([]*repository.Filter, 0)
-	for _, f := range inputFilters {
-		filters = append(filters, repository.NewFilter(f.GetKey(), f.GetValue(), f.GetMethod()))
-	}
-
-	uList, err := s.repo.List(pagination, sort, filters)
-	if err != nil {
-		return nil, err
-	}
-
-	res := make([]*api.User, 0)
-	for _, u := range uList {
-		res = append(res, &api.User{
-			Id:       u.GetID(),
-			Username: u.GetUserName(),
-			Email:    u.GetEmail(),
-		})
-	}
-
-	return &api.ListUserResponse{
-		Users: res,
-	}, nil
+	// Response to client
+	return util.MapListUserResponse(users), nil
 }

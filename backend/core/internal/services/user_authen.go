@@ -4,6 +4,7 @@ import (
 	"context"
 	"user_ms/backend/core/api"
 	"user_ms/backend/core/internal/repository"
+	"user_ms/backend/core/internal/util"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,8 +31,7 @@ func (s *userAuthenService) Ping(ctx context.Context, in *api.PingRequest) (*api
 
 func (s *userAuthenService) Login(ctx context.Context, in *api.UserLoginRequest) (*api.UserLoginResponse, error) {
 
-	username := in.GetUsername()
-	password := in.GetPassword()
+	username, password := util.MapUserLoginRequest(in)
 
 	u, err := s.repo.Login(username)
 	if err != nil {
@@ -47,7 +47,5 @@ func (s *userAuthenService) Login(ctx context.Context, in *api.UserLoginRequest)
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")
 	}
 
-	return &api.UserLoginResponse{
-		AccessToken: token,
-	}, nil
+	return util.MapUserLoginResponse(token), nil
 }

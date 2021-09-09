@@ -1,6 +1,10 @@
 package models
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 type User struct {
 	ID       uint32
@@ -12,6 +16,10 @@ type User struct {
 
 func (u *User) GetID() uint32 {
 	return u.ID
+}
+
+func (u *User) GetStringID() string {
+	return strconv.FormatUint(uint64(u.GetID()), 10)
 }
 
 func (u *User) GetEmail() string {

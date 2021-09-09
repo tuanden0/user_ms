@@ -65,8 +65,9 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 	}
 
 	newCTX := context.WithValue(ctx, constant.JWTKey, repository.UserClaims{
-		Username: claims.Username,
-		Role:     claims.Role,
+		Id:       claims.GetID(),
+		Username: claims.GetUserName(),
+		Role:     claims.GetRole(),
 	})
 
 	return newCTX, nil

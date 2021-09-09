@@ -21,3 +21,9 @@ CREATE, RETRIEVE, UPDATE, DELETE, LIST (support pagination, filters and sort)
 ~~Manage user login~~
 
 ~~Validate user authenticated~~
+
+Handle DB error when init
+
+~~Making a mapping layer to reduce manual mapping request data to model~~
+
+~~Need define validate layer to handle custom validate data~~
