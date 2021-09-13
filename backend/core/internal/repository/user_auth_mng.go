@@ -49,6 +49,10 @@ func (u *UserClaims) GetRole() string {
 	return u.Role
 }
 
+func (u *UserClaims) IsAnonymous() bool {
+	return u.GetRole() == "anonymous"
+}
+
 func (manager *JWTManager) Verify(accessToken string) (*UserClaims, error) {
 	token, err := jwt.ParseWithClaims(
 		accessToken,
@@ -128,17 +132,14 @@ func ParseUsersOrNilFromCTX(ctx context.Context) *UserClaims {
 // function validate user access role
 func ValidateAcessRole(ctx context.Context, roles ...string) (*UserClaims, error) {
 
-	userClaim := ctx.Value(constant.JWTKey)
+	userClaim := ParseUserOrAnonymousFromCTX(ctx)
 	if userClaim != nil {
-		if userClaim, ok := userClaim.(UserClaims); ok {
-			for _, r := range roles {
-				if userClaim.GetRole() == r || r == "all" {
-					return &userClaim, nil
-				}
+		for _, r := range roles {
+			if userClaim.GetRole() == r || r == "all" {
+				return userClaim, nil
 			}
-			return nil, status.Errorf(codes.PermissionDenied, "do not have premission to access")
-
 		}
+		return nil, status.Errorf(codes.PermissionDenied, "do not have premission to access")
 	}
 
 	return nil, status.Errorf(codes.Unauthenticated, "authorization info is not provided")

@@ -5,6 +5,7 @@ import (
 	"user_ms/backend/core/api"
 	"user_ms/backend/core/internal/repository"
 	"user_ms/backend/core/internal/util"
+	"user_ms/backend/core/internal/validators"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,6 +31,11 @@ func (s *userAuthenService) Ping(ctx context.Context, in *api.PingRequest) (*api
 }
 
 func (s *userAuthenService) Login(ctx context.Context, in *api.UserLoginRequest) (*api.UserLoginResponse, error) {
+
+	// Validate UserLoginRequest
+	if err := validators.ValidateUserLoginRequest(ctx, in); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	}
 
 	username, password := util.MapUserLoginRequest(in)
 

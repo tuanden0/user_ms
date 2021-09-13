@@ -31,7 +31,10 @@ func StartGRPCServer() {
 	}
 
 	// Connect DB
-	db := util.ConnectDatabase()
+	db, dbErr := util.ConnectDatabase()
+	if dbErr != nil {
+		panic(dbErr)
+	}
 
 	// Create User Services
 	userAuthRepo := repository.NewJWTManager(secretKey, tokenDuration, db)

@@ -44,7 +44,8 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 
 	// Bypass login
 	loginPath := "/api.AuthenService/Login"
-	if method == loginPath {
+	createPath := "/api.UserAPI/Create"
+	if method == loginPath || method == createPath {
 		return ctx, nil
 	}
 

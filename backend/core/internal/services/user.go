@@ -6,6 +6,9 @@ import (
 	"user_ms/backend/core/internal/repository"
 	"user_ms/backend/core/internal/util"
 	"user_ms/backend/core/internal/validators"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UserService interface {
@@ -22,13 +25,6 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 func (s *userService) Ping(ctx context.Context, in *api.PingRequest) (*api.PingResponse, error) {
-
-	// Validate User access role
-	_, err := repository.ValidateAcessRole(ctx, "all")
-	if err != nil {
-		return nil, err
-	}
-
 	return &api.PingResponse{
 		Message: "Pong",
 	}, nil
@@ -38,18 +34,18 @@ func (s *userService) Create(ctx context.Context, in *api.CreateUserRequest) (*a
 
 	// Validate CreateUserRequest
 	if err := validators.ValidateCreateUserRequest(ctx, in); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Mapping input to model
 	u, err := util.MapCreateUserRequest(ctx, in)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Create user
 	if err := s.repo.Create(u); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	// Response to client
@@ -60,7 +56,7 @@ func (s *userService) Retrieve(ctx context.Context, in *api.RetrieveUserRequest)
 
 	// Validate RetrieveUserRequest
 	if err := validators.ValidateRetrieveUserRequest(ctx, in); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Mapping input to user id
@@ -69,7 +65,7 @@ func (s *userService) Retrieve(ctx context.Context, in *api.RetrieveUserRequest)
 	// Get user from user id
 	u, err := s.repo.Retrieve(id)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	// Response to client
@@ -80,19 +76,19 @@ func (s *userService) Update(ctx context.Context, in *api.UpdateUserRequest) (*a
 
 	// Validate UpdateUserRequest
 	if err := validators.ValidateUpdateUserRequest(ctx, in); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Mapping user input to model
 	uInput, err := util.MapUpdateUserRequest(ctx, in)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Update user
 	u, err := s.repo.Update(uInput.GetStringID(), *uInput)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	// Return to client
@@ -103,13 +99,13 @@ func (s *userService) Delete(ctx context.Context, in *api.DeleteUserRequest) (*a
 
 	// Validate DeleteUserRequest
 	if err := validators.ValidateDeleteUserRequest(ctx, in); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Mapping input
 	id := util.MapUserId(in.GetId())
 	if err := s.repo.Delete(id); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Respose to client
@@ -120,7 +116,7 @@ func (s *userService) List(ctx context.Context, in *api.ListUserRequest) (*api.L
 
 	// Validate ListUserRequest
 	if err := validators.ValidateListUserRequest(ctx, in); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Mapping input to models
@@ -129,7 +125,7 @@ func (s *userService) List(ctx context.Context, in *api.ListUserRequest) (*api.L
 	// Get list users
 	users, err := s.repo.List(pagination, sort, filters)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	// Response to client

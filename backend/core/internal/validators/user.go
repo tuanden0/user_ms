@@ -11,10 +11,11 @@ import (
 func ValidateCreateUserRequest(ctx context.Context, in *api.CreateUserRequest) error {
 
 	// Validate User access role
-	_, accessErr := repository.ValidateAcessRole(ctx, "admin")
+	_, accessErr := repository.ValidateAcessRole(ctx, "all")
 	if accessErr != nil {
 		return accessErr
 	}
+
 	return nil
 }
 

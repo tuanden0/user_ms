@@ -11,12 +11,21 @@ import (
 
 func MapCreateUserRequest(ctx context.Context, in *api.CreateUserRequest) (*models.User, error) {
 
+	// Get user role
+	userClaim := repository.ParseUserOrAnonymousFromCTX(ctx)
+
 	// Mapping user input to user model
 	u := &models.User{
 		Username: in.GetUsername(),
 		Password: in.GetPassword(),
 		Email:    in.GetEmail(),
 		Role:     in.GetRole(),
+	}
+
+	if userClaim.GetRole() == "admin" {
+		u.Role = in.GetRole()
+	} else {
+		u.Role = "user"
 	}
 
 	// Handle hash pasword
